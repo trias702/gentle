@@ -1,10 +1,11 @@
 import subprocess
 import os
 import logging
+import sys
 
 from .util.paths import get_binary
 
-EXECUTABLE_PATH = get_binary("ext/k3")
+EXECUTABLE_PATH = get_binary("ext\\k3.exe") if sys.platform == 'win32' else get_binary("ext/k3")
 logger = logging.getLogger(__name__)
 
 STDERR = subprocess.DEVNULL

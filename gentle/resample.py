@@ -1,4 +1,4 @@
-import os
+import os, sys
 import shutil
 import subprocess
 import tempfile
@@ -8,7 +8,7 @@ from contextlib import contextmanager
 
 from .util.paths import get_binary
 
-FFMPEG = get_binary("ffmpeg")
+FFMPEG = get_binary("ffmpeg.exe") if sys.platform == 'win32' else get_binary("ffmpeg")
 SOX = get_binary("sox")
 
 def resample_ffmpeg(infile, outfile, offset=None, duration=None):
@@ -75,7 +75,11 @@ def resample(infile, outfile, offset=None, duration=None):
 
 @contextmanager
 def resampled(infile, offset=None, duration=None):
-    with tempfile.NamedTemporaryFile(suffix='.wav') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as fp:
         if resample(infile, fp.name, offset, duration) != 0:
             raise RuntimeError("Unable to resample/encode '%s'" % infile)
-        yield fp.name
+        try:
+            yield fp.name
+        finally:
+            fp.close()
+            os.unlink(fp.name)
